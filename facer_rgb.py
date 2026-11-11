@@ -167,40 +167,49 @@ if args.save:
         vars(args).pop('load')
         json.dump(vars(args), f, indent=4)
 
-if args.mode == 0:
-    # Static coloring mode
-    payload = [0] * PAYLOAD_SIZE_STATIC_MODE
-    if args.zone < 1 or args.zone > 8:
-        print("Invalid Zone ID entered! Possible values are: 1, 2, 3, 4 from left to right")
-    payload[0] = 1 << (args.zone - 1)
-    payload[1] = args.red
-    payload[2] = args.green
-    payload[3] = args.blue
-    with open(CHARACTER_DEVICE_STATIC, 'wb') as cd:
-        cd.write(bytes(payload))
+try:
+    if args.mode == 0:
+        # Static coloring mode
+        payload = [0] * PAYLOAD_SIZE_STATIC_MODE
+        if args.zone < 1 or args.zone > 8:
+            print("Invalid Zone ID entered! Possible values are: 1, 2, 3, 4 from left to right")
+        payload[0] = 1 << (args.zone - 1)
+        payload[1] = args.red
+        payload[2] = args.green
+        payload[3] = args.blue
+        with open(CHARACTER_DEVICE_STATIC, 'wb') as cd:
+            cd.write(bytes(payload))
 
-    # Tell WMI To use STATIC coloring
-    # Dynamic coloring mode
-    payload = [0] * PAYLOAD_SIZE
-    payload[2] = args.brightness
-    payload[9] = 1
-    with open(CHARACTER_DEVICE, 'wb') as cd:
-        cd.write(bytes(payload))
+        # Tell WMI To use STATIC coloring
+        # Dynamic coloring mode
+        payload = [0] * PAYLOAD_SIZE
+        payload[2] = args.brightness
+        payload[9] = 1
+        with open(CHARACTER_DEVICE, 'wb') as cd:
+            cd.write(bytes(payload))
 
+    else:
+        # Dynamic coloring mode
+        payload = [0] * PAYLOAD_SIZE
+        payload[0] = args.mode
+        payload[1] = args.speed
+        payload[2] = args.brightness
+        payload[3] = 8 if args.mode == 3 else 0
+        payload[4] = args.direction
+        payload[5] = args.red
+        payload[6] = args.green
+        payload[7] = args.blue
+        payload[9] = 1
 
+        with open(CHARACTER_DEVICE, 'wb') as cd:
+            cd.write(bytes(payload))
 
-else:
-    # Dynamic coloring mode
-    payload = [0] * PAYLOAD_SIZE
-    payload[0] = args.mode
-    payload[1] = args.speed
-    payload[2] = args.brightness
-    payload[3] = 8 if args.mode == 3 else 0
-    payload[4] = args.direction
-    payload[5] = args.red
-    payload[6] = args.green
-    payload[7] = args.blue
-    payload[9] = 1
-
-    with open(CHARACTER_DEVICE, 'wb') as cd:
-        cd.write(bytes(payload))
+except FileNotFoundError:
+    print(f"Error: Backlight device not found. Pastikan modul kernel facer sudah dimuat ('sudo ./install.sh').")
+    exit(1)
+except PermissionError:
+    print(f"Error: Permission denied mengakses device backlight. Coba jalankan dengan sudo atau cek izin udev.")
+    exit(1)
+except Exception as e:
+    print(f"Error saat konfigurasi backlight: {e}")
+    exit(1)

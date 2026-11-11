@@ -1,3 +1,15 @@
+> [!NOTE]
+> ### Custom Fork Notice (GPL-3.0 Section 5a Compliance)
+> - **Modified by:** [anamBadrus (@BadRush)](https://github.com/BadRush) (November 2026)
+> - **Upstream Repository:** [JafarAkhondali/acer-predator-turbo-and-rgb-keyboard-linux-module](https://github.com/JafarAkhondali/acer-predator-turbo-and-rgb-keyboard-linux-module)
+> - **License:** GNU General Public License v3.0 ([`LICENSE`](LICENSE))
+>
+> **Ringkasan Modifikasi pada Fork Ini:**
+> 1. **Perbaikan Driver C (`src/facer.c`)**: Mengaktifkan `.predator_v4 = 1` & `.rgb_ec_enable = 1` pada `quirk_acer_nitro_an515_58` serta memperbaiki return status pada `set_u8_array`.
+> 2. **Kompatibilitas openSUSE / Kernel Baru (`Makefile`, `install.sh`, `refresh.sh`)**: Deteksi otomatis direktori `/usr/lib/modules/$(uname -r)/build`, pemuatan dependensi modul (`rfkill`, `platform_profile`), dan pengaturan izin `/dev/acer-gkbbl*`.
+> 3. **Skrip Tema RGB 4-Zona Kustom (`my_theme.sh`)**: Mendukung kustomisasi kecerahan (`./my_theme.sh 50` atau `./my_theme.sh -b 50`), menyimpan kecerahan terakhir secara otomatis, serta auto-load modul jika belum aktif.
+> 4. **Systemd Auto-Rebuild & Resume (`install_service.sh`)**: Otomatis membangun ulang `facer.ko` saat terjadi pembaruan kernel/firmware internal dan memulihkan tema RGB saat bangun dari mode sleep/suspend (`turbo-fan-resume.service`).
+
 <p align="center">
 <img src="https://github.com/user-attachments/assets/4823f375-3daf-4a6f-a041-1146bfc32c74" alt="Screenshot" width="300">
 </p>

@@ -697,6 +697,8 @@ static struct quirk_entry quirk_acer_nitro_an515_58 = {
 	.turbo = 1,
 	.cpu_fans = 1,
 	.gpu_fans = 1,
+	.predator_v4 = 1,
+	.rgb_ec_enable = 1,
 };
 
 static struct quirk_entry quirk_acer_predator_v4 = {
@@ -2330,7 +2332,7 @@ static acpi_status set_u8_array(u8 array[], size_t array_size, u32 cap)
 			status = WMID_gaming_set_u8_array(array, array_size, cap);
 			if (ACPI_FAILURE(status))
 				return status;
-			fallthrough;
+			return status;
 		default:
 			return AE_BAD_PARAMETER;
 		}
