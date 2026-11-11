@@ -124,6 +124,7 @@ else
 	modprobe platform_profile 2>/dev/null || true
 	modprobe sparse-keymap 2>/dev/null || true
 	modprobe video 2>/dev/null || true
+	chcon -t modules_object_t $target_dir/src/facer.ko 2>/dev/null || true
 	if ! insmod $target_dir/src/facer.ko; then
 		echo "[!] insmod failed (possible firmware/kernel ABI update). Triggering auto-rebuild..."
 		rebuild_module
@@ -141,7 +142,7 @@ done
 chmod 666 /dev/acer-gkbbl-0 /dev/acer-gkbbl-static-0 2>/dev/null || true
 
 if [[ -x "\$REPO_DIR/my_theme.sh" ]]; then
-	"\$REPO_DIR/my_theme.sh"
+	"\$REPO_DIR/my_theme.sh" || "$target_dir/my_theme.sh"
 elif [[ -x "$target_dir/my_theme.sh" ]]; then
 	"$target_dir/my_theme.sh"
 fi
@@ -157,16 +158,25 @@ if [[ ! -e /dev/acer-gkbbl-0 || ! -e /dev/acer-gkbbl-static-0 ]]; then
 else
 	chmod 666 /dev/acer-gkbbl-0 /dev/acer-gkbbl-static-0 2>/dev/null || true
 	if [[ -x "\$REPO_DIR/my_theme.sh" ]]; then
-		"\$REPO_DIR/my_theme.sh"
+		"\$REPO_DIR/my_theme.sh" || "$target_dir/my_theme.sh"
 	elif [[ -x "$target_dir/my_theme.sh" ]]; then
 		"$target_dir/my_theme.sh"
 	fi
 fi
 EOF
 
-	#locking down service file for security
+	#locking down service file for security and setting SELinux contexts (openSUSE Leap 16.0+)
 	chown -R root:root $target_dir
 	chmod 744 $target_dir/service.sh $target_dir/resume.sh
+	chcon -R -t bin_t $target_dir/*.sh $target_dir/*.py 2>/dev/null || true
+	chcon -t modules_object_t $target_dir/src/facer.ko 2>/dev/null || true
+	chcon -t bin_t "$REPO_DIR/my_theme.sh" "$REPO_DIR/facer_rgb.py" 2>/dev/null || true
+	if [[ -f "$REPO_DIR/.last_brightness" ]]; then
+		chcon -t etc_t "$REPO_DIR/.last_brightness" 2>/dev/null || true
+		cp -f "$REPO_DIR/.last_brightness" "$target_dir/.last_brightness" 2>/dev/null || true
+		chmod 666 "$target_dir/.last_brightness" 2>/dev/null || true
+		chcon -t etc_t "$target_dir/.last_brightness" 2>/dev/null || true
+	fi
 
 	systemctl daemon-reload
 	systemctl enable $service

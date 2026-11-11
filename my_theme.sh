@@ -57,6 +57,11 @@ fi
 
 echo "$BRIGHTNESS" > "$BRIGHTNESS_FILE" 2>/dev/null || true
 chmod 666 "$BRIGHTNESS_FILE" 2>/dev/null || true
+chcon -t etc_t "$BRIGHTNESS_FILE" 2>/dev/null || true
+if [[ -d "/opt/turbo-fan" && -w "/opt/turbo-fan" ]]; then
+    echo "$BRIGHTNESS" > "/opt/turbo-fan/.last_brightness" 2>/dev/null || true
+    chmod 666 "/opt/turbo-fan/.last_brightness" 2>/dev/null || true
+fi
 
 if [[ ! -e "/dev/acer-gkbbl-0" || ! -e "/dev/acer-gkbbl-static-0" ]]; then
     echo "[!] Device node /dev/acer-gkbbl* belum tersedia. Memuat modul facer otomatis..."

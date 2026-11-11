@@ -8,6 +8,7 @@ rmmod facer 2>/dev/null || true
 make
 modprobe platform_profile 2>/dev/null || true
 modprobe rfkill 2>/dev/null || true
+chcon -t modules_object_t src/facer.ko 2>/dev/null || true
 insmod src/facer.ko
 sleep 0.5
 chmod 666 /dev/acer-gkbbl-0 /dev/acer-gkbbl-static-0 2>/dev/null || true

@@ -42,6 +42,7 @@ modprobe video 2>/dev/null || true
 
 # Insert facer module
 echo "[*] Inserting facer kernel module..."
+chcon -t modules_object_t src/facer.ko 2>/dev/null || true
 insmod src/facer.ko
 
 # Ensure device node permissions
