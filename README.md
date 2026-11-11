@@ -3,10 +3,11 @@
 > - **Modified by:** [anamBadrus (@BadRush)](https://github.com/BadRush) (November 2026)
 > - **Upstream Repository:** [JafarAkhondali/acer-predator-turbo-and-rgb-keyboard-linux-module](https://github.com/JafarAkhondali/acer-predator-turbo-and-rgb-keyboard-linux-module)
 > - **License:** GNU General Public License v3.0 ([`LICENSE`](LICENSE))
+> - **Tested Device & OS:** **Acer Nitro 5 `AN515-58`** (Board: `Jimny_ADH`) on **openSUSE Leap 16.0** (Kernel `6.12.0-160000.40-default` x86_64)
 >
 > **Ringkasan Modifikasi pada Fork Ini:**
 > 1. **Perbaikan Driver C (`src/facer.c`)**: Mengaktifkan `.predator_v4 = 1` & `.rgb_ec_enable = 1` pada `quirk_acer_nitro_an515_58` serta memperbaiki return status pada `set_u8_array`.
-> 2. **Kompatibilitas openSUSE / Kernel Baru (`Makefile`, `install.sh`, `refresh.sh`)**: Deteksi otomatis direktori `/usr/lib/modules/$(uname -r)/build`, pemuatan dependensi modul (`rfkill`, `platform_profile`), dan pengaturan izin `/dev/acer-gkbbl*`.
+> 2. **Kompatibilitas openSUSE Leap 16.0 / Kernel 6.12+ (`Makefile`, `install.sh`, `refresh.sh`)**: Deteksi otomatis direktori `/usr/lib/modules/$(uname -r)/build`, pemuatan dependensi modul (`rfkill`, `platform_profile`), dan pengaturan izin `/dev/acer-gkbbl*`.
 > 3. **Skrip Tema RGB 4-Zona Kustom (`my_theme.sh`)**: Mendukung kustomisasi kecerahan (`./my_theme.sh 50` atau `./my_theme.sh -b 50`), menyimpan kecerahan terakhir secara otomatis, serta auto-load modul jika belum aktif.
 > 4. **Systemd Auto-Rebuild & Resume (`install_service.sh`)**: Otomatis membangun ulang `facer.ko` saat terjadi pembaruan kernel/firmware internal dan memulihkan tema RGB saat bangun dari mode sleep/suspend (`turbo-fan-resume.service`).
 
@@ -48,7 +49,7 @@ Compatibility table:
 | AN515-55     |                                                      -                                                       |                                                      -                                                      |        Yes        |     Yes      |
 | AN515-56     |                                                      -                                                       |                                                      -                                                      |        Yes        |     Yes      |
 | AN515-57     |                                                      -                                                       |                                                      -                                                      |        Yes        |     Yes      |
-| AN515-58     |                                                      -                                                       |                                                      -                                                      |        Yes        |     Yes      |
+| **AN515-58** |                                                     Yes                                                      |                                                     Yes                                                     |        Yes        | **Yes (openSUSE Leap 16.0, Kernel 6.12)** |
 | AN517-41     |                                                      -                                                       |                                                      -                                                      |        Yes        |     Yes      |
 | PH315-52     |                                                     Yes                                                      |                                                     Yes                                                     |        Yes        |     Yes      |
 | PH315-53     |                                                     Yes                                                      |                                                     Yes                                                     |        Yes        |     Yes      |
@@ -93,6 +94,9 @@ If the directory exists, it may work fine. Otherwise, RGB will not work at all.
 If you have secure boot enabled, you are not using Ubuntu and installation failed with error `Key was rejected by service`, you can sign the module yourself by following the instructions [here](https://github.com/JafarAkhondali/acer-predator-turbo-and-rgb-keyboard-linux-module/issues/28#issuecomment-1054423776). Make sure you have `rsync` installed. You can check that by doing `rsync --version` in your terminal, and if you don't have it, just install it by doing `sudo apt install rsync`.
 
 Install Linux headers using your distro package manager:
+openSUSE Leap / Tumbleweed:  
+`sudo zypper install kernel-default-devel gcc make rsync`
+
 Ubuntu (or other Debian based distros):  
 `sudo apt-get install linux-headers-$(uname -r) gcc make`
 
@@ -264,7 +268,7 @@ Load the previously saved profile:
 If installation failed, check this [issue](https://github.com/JafarAkhondali/acer-predator-turbo-and-rgb-keyboard-linux-module/issues/4#issuecomment-905486393)
 If something didn't look right, do a reboot (or boot to windows) and play a little with some Predator Sense app to reset ACPI registers. 
 
-If the keyboard brightness reacts but colors and effects are ignored (it stays on the default color): some ECs only render RGB while their "PredatorSense is running" flag is set (EC register `0x03`, bit 4). This is done automatically for the PT314-51s; on other models you can test it with `sudo modprobe facer rgb_ec_enable=1` and, if it fixes RGB for you, please open an issue or a PR so your model can be added.
+If the keyboard brightness reacts but colors and effects are ignored (it stays on the default color): some ECs only render RGB while their "PredatorSense is running" flag is set (EC register `0x03`, bit 4). This is done automatically for the PT314-51s and **AN515-58** in this fork; on other models you can test it with `sudo modprobe facer rgb_ec_enable=1` and, if it fixes RGB for you, please open an issue or a PR so your model can be added.
 
 ## Uninstall:
 Simply run `./uninstall.sh` and (hopefully) everything should be back to normal.  
