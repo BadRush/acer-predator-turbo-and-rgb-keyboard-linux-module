@@ -11,6 +11,104 @@
 > 3. **Skrip Tema RGB 4-Zona Kustom (`my_theme.sh`)**: Mendukung kustomisasi kecerahan (`./my_theme.sh 50` atau `./my_theme.sh -b 50`), menyimpan kecerahan terakhir secara otomatis, serta auto-load modul jika belum aktif.
 > 4. **Systemd Auto-Rebuild & Resume (`install_service.sh`)**: Otomatis membangun ulang `facer.ko` saat terjadi pembaruan kernel/firmware internal dan memulihkan tema RGB saat bangun dari mode sleep/suspend (`turbo-fan-resume.service`).
 
+---
+
+## Panduan Cepat & Referensi Command Script (Bahasa Indonesia)
+
+### 1. Persiapan & Instalasi
+
+#### a. Instalasi Paket Dependensi
+Pastikan header kernel, compiler `gcc`, `make`, dan `rsync` sudah terpasang sesuai distro Linux Anda:
+
+```bash
+# openSUSE Leap 16.0 / Tumbleweed
+sudo zypper install kernel-default-devel gcc make rsync python3
+
+# Ubuntu / Debian
+sudo apt-get install linux-headers-$(uname -r) gcc make rsync python3
+
+# Arch Linux
+sudo pacman -S linux-headers gcc make rsync python
+```
+
+#### b. Clone Repositori & Instalasi Permanen (Direkomendasikan)
+Gunakan `./install_service.sh` agar modul `facer` dan tema warna [`my_theme.sh`](my_theme.sh) otomatis aktif saat **boot/reboot**, otomatis **rebuild setelah update kernel/firmware**, serta otomatis pulih saat laptop bangun dari **sleep/suspend**:
+
+```bash
+git clone https://github.com/BadRush/acer-predator-turbo-and-rgb-keyboard-linux-module.git
+cd acer-predator-turbo-and-rgb-keyboard-linux-module
+chmod +x ./*.sh
+sudo ./install_service.sh
+```
+
+> **Catatan:** Jika Anda hanya ingin mencoba modul untuk satu sesi (tanpa service systemd), jalankan `sudo ./install.sh`.
+
+---
+
+### 2. Menggunakan & Mengatur Kecerahan [`my_theme.sh`](my_theme.sh)
+
+Skrip [`my_theme.sh`](my_theme.sh) menerapkan tema warna statis 4-zona sekaligus menyimpan tingkat kecerahan terakhir ke file `.last_brightness`. Jika modul `facer` belum dimuat ketika skrip dijalankan, skrip akan otomatis menjalankan `sudo ./install.sh`.
+
+```bash
+# Menerapkan tema dengan kecerahan terakhir yang tersimpan (default awal: 100%)
+./my_theme.sh
+
+# Mengatur kecerahan ke 50% (sekaligus disimpan sebagai default untuk boot/wake berikutnya)
+./my_theme.sh 50
+
+# Menggunakan flag -b / --brightness (rentang valid: 0 - 100)
+./my_theme.sh -b 25
+
+# Mematikan lampu latar keyboard sementara (kecerahan 0%)
+./my_theme.sh 0
+
+# Menampilkan panduan bantuan
+./my_theme.sh --help
+```
+
+#### Cara Mengubah Warna Tiap Zona di `my_theme.sh`
+Buka [`my_theme.sh`](my_theme.sh) dan sesuaikan nilai `-cR` (Red `0-255`), `-cG` (Green `0-255`), dan `-cB` (Blue `0-255`) pada masing-masing zona (`-z 1` dari kiri hingga `-z 4` di kanan):
+
+| Zona | Posisi Keyboard | Warna Bawaan `my_theme.sh` | Nilai RGB (`R, G, B`) |
+|:----:|-----------------|----------------------------|-----------------------|
+| `-z 1` | Kiri (WASD) | Electric Violet | `120, 20, 255` |
+| `-z 2` | Tengah-Kiri | Cyan Sky Blue | `0, 220, 255` |
+| `-z 3` | Tengah-Kanan | Emerald / Mint Green | `0, 255, 70` |
+| `-z 4` | Kanan (Numpad) | Light Lemon Yellow | `255, 220, 10` |
+
+> Karena `turbo-fan.service` terhubung langsung ke [`my_theme.sh`](my_theme.sh) di folder repositori ini, Anda **tidak perlu** menjalankan ulang `sudo ./install_service.sh` setelah mengedit warna atau kecerahan di [`my_theme.sh`](my_theme.sh).
+
+---
+
+### 3. Daftar Lengkap Skrip & Perintah
+
+| Skrip / Perintah | Fungsi Utama | Contoh Penggunaan |
+|------------------|--------------|-------------------|
+| [`./my_theme.sh`](my_theme.sh) | Menerapkan tema 4-zona kustom + mengatur & menyimpan kecerahan (`0–100`) | `./my_theme.sh 60` |
+| [`sudo ./install.sh`](install.sh) | Kompilasi & muat modul `facer.ko` untuk sesi saat ini | `sudo ./install.sh` |
+| [`sudo ./install_service.sh`](install_service.sh) | Pasang service systemd (`turbo-fan` & `turbo-fan-resume`) untuk auto-boot, auto-rebuild, & wake recovery | `sudo ./install_service.sh` |
+| [`sudo ./refresh.sh`](refresh.sh) | Kompilasi ulang cepat & muat ulang `facer.ko` setelah mengedit `src/facer.c` | `sudo ./refresh.sh` |
+| [`./facer_rgb.py`](facer_rgb.py) | CLI Python untuk kontrol mode efek RGB (`0`=Static, `1`=Breath, `2`=Neon, `3`=Wave, `4`=Shifting, `5`=Zoom) | `./facer_rgb.py -m 3 -s 5 -b 80` |
+| [`./uninstall_service.sh`](uninstall_service.sh) | Menghapus service systemd `turbo-fan` & `turbo-fan-resume` serta `/opt/turbo-fan` | `sudo ./uninstall_service.sh` |
+| [`./uninstall.sh`](uninstall.sh) | Melepas modul `facer` dari kernel dan membersihkan hasil build | `sudo ./uninstall.sh` |
+
+---
+
+### 4. Manajemen Systemd & Troubleshooting
+
+```bash
+# Mengecek status service utama (boot & auto-rebuild)
+sudo systemctl status turbo-fan.service
+
+# Memicu ulang pemuatan modul & tema secara paksa
+sudo systemctl restart turbo-fan.service
+
+# Mengecek log modul facer di kernel
+sudo dmesg | grep -iE "facer|acer" | tail -n 20
+```
+
+---
+
 <p align="center">
 <img src="https://github.com/user-attachments/assets/4823f375-3daf-4a6f-a041-1146bfc32c74" alt="Screenshot" width="300">
 </p>
@@ -107,7 +205,7 @@ Arch (I don't use arch anymore btw):
 
 ## Install one time (Module won't work after reboot)
 ```bash
-git clone https://github.com/JafarAkhondali/acer-predator-turbo-and-rgb-keyboard-linux-module
+git clone https://github.com/BadRush/acer-predator-turbo-and-rgb-keyboard-linux-module
 cd "acer-predator-turbo-and-rgb-keyboard-linux-module"
 chmod +x ./*.sh
 sudo ./install.sh
@@ -125,7 +223,7 @@ sudo pacman -U Predator-Sense-CLI-{version}-any.pkg.tar.zst
 
 ## Install as a systemd service (Will work after reboot)
 ```bash
-git clone https://github.com/JafarAkhondali/acer-predator-turbo-and-rgb-keyboard-linux-module
+git clone https://github.com/BadRush/acer-predator-turbo-and-rgb-keyboard-linux-module
 cd "acer-predator-turbo-and-rgb-keyboard-linux-module"
 chmod +x ./*.sh
 sudo ./install_service.sh
@@ -133,7 +231,7 @@ sudo ./install_service.sh
 
 ## Install as an openrc service (Will work after reboot)
 ```bash
-git clone https://github.com/JafarAkhondali/acer-predator-turbo-and-rgb-keyboard-linux-module
+git clone https://github.com/BadRush/acer-predator-turbo-and-rgb-keyboard-linux-module
 cd "acer-predator-turbo-and-rgb-keyboard-linux-module"
 chmod +x ./*.sh
 sudo ./install_openrc.sh
